@@ -13,18 +13,37 @@ public class ResourceTriggerZone : MonoBehaviour
     [SerializeField] private MonoBehaviour playerController; // Assign your movement script here
     [SerializeField] private MonoBehaviour miniGameScript;   // Assign mini-game controller here
 
+    public MiniGameBowlController bowlController;
+
+    private int resourcesInPlace;
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag(resource1Tag)) resource1In = true;
         if (other.CompareTag(resource2Tag)) resource2In = true;
 
         TryActivateSequence();
+        if (other.CompareTag(resource1Tag) || (other.CompareTag(resource2Tag)))
+        {
+            resourcesInPlace++;
+        }
+
+        if (resourcesInPlace >= 2)
+        {
+            StartMiniGame();
+        }
+    }
+
+    private void StartMiniGame() 
+    {
+        bowlController.Activate();
+        Debug.Log("game is called from detector");
     }
 
     private void OnTriggerExit(Collider other)
     {
         if (other.CompareTag(resource1Tag)) resource1In = false;
         if (other.CompareTag(resource2Tag)) resource2In = false;
+        if (other.CompareTag(resource1Tag) || other.CompareTag(resource2Tag)) resourcesInPlace--;
     }
 
     private void TryActivateSequence()
