@@ -1,7 +1,7 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
-public class MiniGameBowlController : MonoBehaviour
+public class MiniGameBowlController2 : MonoBehaviour
 {
     public float moveSpeed = 0.01f;
     public float rotateSpeed = 30f;
@@ -9,7 +9,7 @@ public class MiniGameBowlController : MonoBehaviour
     private bool isActive = false;
 
     [SerializeField] private ParticleSystem pourEffect;
-    [SerializeField] private Transform pourPoint; // where flour comes out
+    [SerializeField] private Transform pourPoint;
     [SerializeField] private LayerMask bowlMask;
     [SerializeField] private float pourRayDistance = 1.5f;
 
@@ -19,11 +19,21 @@ public class MiniGameBowlController : MonoBehaviour
     public float pourDuration = 4f;
 
     public GameObject flourBlockPrefab;
-    public Transform bowlFillPoint; // Assign a transform inside the empty bowl where flour appears
+    public Transform bowlFillPoint;
 
-    public ResourceTriggerZone gameManagerRef;
+    public ResourceTriggerZone2 gameManagerRef;
 
     private bool isPouring = false;
+    private bool hasPoured = false;
+
+    private Vector3 initialPos;
+    private Quaternion initialRot;
+
+    private void Start()
+    {
+        initialPos = transform.position;
+        initialRot = transform.rotation;
+    }
 
     public void Activate()
     {
@@ -42,22 +52,19 @@ public class MiniGameBowlController : MonoBehaviour
 
     void Update()
     {
-        if (!isActive) return;
+        if (!isActive || hasPoured) return;
 
-        // --- Bowl Movement ---
         float moveX = Input.GetAxis("Mouse X") * moveSpeed;
         float moveY = Input.GetAxis("Mouse Y") * moveSpeed;
         transform.position += new Vector3(moveX, moveY, 0f);
 
-        // --- Bowl Rotation ---
         if (Input.GetKey(KeyCode.A))
             transform.Rotate(Vector3.forward, rotateSpeed * Time.deltaTime);
         else if (Input.GetKey(KeyCode.D))
             transform.Rotate(Vector3.forward, -rotateSpeed * Time.deltaTime);
 
-        // --- Pouring Check ---
         float currentZRotation = transform.localEulerAngles.z;
-        if (currentZRotation > 180) currentZRotation -= 360f;
+        if (currentZRotation > 180f) currentZRotation -= 360f;
 
         bool isTilting = Mathf.Abs(currentZRotation) >= 55f;
         bool bowlUnder = IsTargetBowlUnderPourPoint();
@@ -74,7 +81,7 @@ public class MiniGameBowlController : MonoBehaviour
 
             if (isPouring)
             {
-                pourEffectThing.transform.position = pourPoint.transform.position;
+                pourEffectThing.transform.position = pourPoint.position;
             }
         }
         else
@@ -86,19 +93,14 @@ public class MiniGameBowlController : MonoBehaviour
 
     private void CompletePouring()
     {
+        if (hasPoured) return;
+        hasPoured = true;
+
         if (flourBlockPrefab != null && bowlFillPoint != null)
         {
             Instantiate(flourBlockPrefab, bowlFillPoint.position, bowlFillPoint.rotation);
         }
 
-        // Optional: Prevent it from repeating
-        isActive = false;
-
-        // Lock cursor again
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-
-        // Optionally wait a bit and then exit
         StartCoroutine(EndMiniGameAfterDelay());
     }
 
@@ -106,43 +108,32 @@ public class MiniGameBowlController : MonoBehaviour
     {
         yield return new WaitForSeconds(1.5f);
 
-        if (gameManagerRef != null)
-        {
-            pourEffect.Stop();
-            transform.position = new Vector3(-5, -0, 1);
-            transform.rotation = Quaternion.Euler(0, 0, 0);
-            gameManagerRef.ExitMiniGame(); // You create this method
-        }
+        pourEffect.Stop();
+        transform.position = initialPos;
+        transform.rotation = initialRot;
+
+        gameManagerRef?.ExitMiniGame();
     }
-
-
 
     private bool IsTargetBowlUnderPourPoint()
     {
-        if (Physics.Raycast(pourPoint.position, Vector3.down, out RaycastHit hit, pourRayDistance, bowlMask))
-        {
-            return hit.collider.CompareTag("Bowl");
-        }
-        return false;
+        return Physics.Raycast(pourPoint.position, Vector3.down, out RaycastHit hit, pourRayDistance, bowlMask)
+               && hit.collider.CompareTag("Bowl");
     }
 
     private void TryStartPouring()
     {
         if (isPouring) return;
 
-        // Raycast to check for second bowl
-        if (Physics.Raycast(pourPoint.position, Vector3.down, out RaycastHit hit, 1.5f, bowlMask))
+        if (Physics.Raycast(pourPoint.position, Vector3.down, out RaycastHit hit, pourRayDistance, bowlMask))
         {
             if (hit.collider.CompareTag("Bowl"))
             {
                 pourEffect.Play();
                 Debug.Log("PourEffectShouldBePlaying");
                 isPouring = true;
-
-                // You could also trigger filling here
                 hit.collider.GetComponent<FlourReceiver>()?.StartFilling();
             }
-
         }
     }
 
@@ -153,7 +144,6 @@ public class MiniGameBowlController : MonoBehaviour
         pourEffect.Stop();
         isPouring = false;
 
-        // Optional: tell receiver to stop
         Collider[] cols = Physics.OverlapSphere(pourPoint.position, 0.1f, bowlMask);
         foreach (var col in cols)
         {

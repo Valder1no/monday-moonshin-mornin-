@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class ResourceTriggerZone : MonoBehaviour
@@ -15,11 +17,15 @@ public class ResourceTriggerZone : MonoBehaviour
 
     public MiniGameBowlController bowlController;
 
+    List<GameObject> resources = new List<GameObject>();
+
     private int resourcesInPlace;
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag(resource1Tag)) resource1In = true;
         if (other.CompareTag(resource2Tag)) resource2In = true;
+
+        resources.Add(other.gameObject);
 
         TryActivateSequence();
         if (other.CompareTag(resource1Tag) || (other.CompareTag(resource2Tag)))
@@ -29,8 +35,26 @@ public class ResourceTriggerZone : MonoBehaviour
 
         if (resourcesInPlace >= 2)
         {
+            foreach (GameObject obj in resources) 
+            {
+                Destroy(obj);
+            }
             StartMiniGame();
         }
+    }
+
+    public void ExitMiniGame()
+    {
+        if (miniGameScript != null) miniGameScript.enabled = false;
+        if (playerController != null) playerController.enabled = true;
+
+        resource1In = false;
+        resource2In = false;
+
+        resourcesInPlace = 0;
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
     private void StartMiniGame() 
@@ -85,5 +109,9 @@ public class ResourceTriggerZone : MonoBehaviour
         if (miniGameScript != null)
             miniGameScript.enabled = true;
         playerController.enabled = false;
+
+        resource1In = false;
+        resource2In = false;
+        resourcesInPlace = 0;
     }
 }
