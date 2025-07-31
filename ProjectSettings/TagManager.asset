@@ -8,6 +8,7 @@ TagManager:
   - Resource2
   - Bowl
   - Flour
+  - Cake
   layers:
   - Default
   - TransparentFX

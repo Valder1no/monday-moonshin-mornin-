@@ -38,6 +38,7 @@ public class MiniGameBowlController2 : MonoBehaviour
     public void Activate()
     {
         isActive = true;
+        hasPoured = false;
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
         Debug.Log("Game is called from mini game manager");
@@ -53,6 +54,8 @@ public class MiniGameBowlController2 : MonoBehaviour
     void Update()
     {
         if (!isActive || hasPoured) return;
+
+        Debug.Log("update runs");
 
         float moveX = Input.GetAxis("Mouse X") * moveSpeed;
         float moveY = Input.GetAxis("Mouse Y") * moveSpeed;

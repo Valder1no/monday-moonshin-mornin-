@@ -54,7 +54,7 @@ public class ItemInteractor : MonoBehaviour
                 if (hit.collider.attachedRigidbody == heldItemRb || hit.collider.isTrigger)
                     continue;
 
-                // Found something else — adjust the target position
+                // Found something else ï¿½ adjust the target position
                 targetPos = hit.point - direction * bufferDistance;
                 break;
             }
