@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,6 +10,12 @@ public class ResourceTriggerZone2 : MonoBehaviour
     [SerializeField] private MonoBehaviour playerController;
     [SerializeField] private MonoBehaviour miniGameScript;
     [SerializeField] private MiniGameBowlController2 bowlController2;
+
+    [SerializeField] private Transform playerTransform;
+    [SerializeField] private GameObject startingPos;
+
+    public GameObject playerButReal;
+    public float moveSpeed = 1f;
 
     private readonly List<GameObject> resources = new();
     private string lastResourceTag = "Flour";
@@ -67,13 +74,26 @@ public class ResourceTriggerZone2 : MonoBehaviour
 
     private void StartMiniGame()
     {
+        Vector3 startPos = player.transform.position;
+        Quaternion startRot = player.transform.rotation;
+
+        Vector3 targetPos = cameraTargetPoint.position;
+        Quaternion targetRot = cameraTargetPoint.rotation;
+
+        float t = 100f;
+
         bowlController2.gameManagerRef = this;
         bowlController2.Activate();
 
         if (miniGameScript != null) miniGameScript.enabled = true;
         if (playerController != null) playerController.enabled = false;
 
-        StartCoroutine(MoveCameraToTable());
+        playerButReal.transform.position = targetPos;
+        playerButReal.transform.rotation = targetRot;
+        //playerButReal.transform.position = //Vector3.Lerp(startPos, targetPos, t);
+        //playerButReal.transform.rotation = //Quaternion.Slerp(startRot, targetRot, t);
+
+        StartCoroutine(MovePlayerToMiniGamePosition());
     }
 
     public void ExitMiniGame()
@@ -87,11 +107,14 @@ public class ResourceTriggerZone2 : MonoBehaviour
         Cursor.visible = false;
     }
 
-    private System.Collections.IEnumerator MoveCameraToTable()
+    private IEnumerator MovePlayerToMiniGamePosition()
     {
+        // Disable movement
+        playerController.enabled = false;
+
+        // Lerp camera to new position
         float duration = 1.5f;
         float elapsed = 0f;
-
         Vector3 startPos = player.transform.position;
         Quaternion startRot = player.transform.rotation;
 
@@ -109,5 +132,10 @@ public class ResourceTriggerZone2 : MonoBehaviour
 
         player.transform.position = targetPos;
         player.transform.rotation = targetRot;
+
+        // Enable minigame
+        if (miniGameScript != null)
+            miniGameScript.enabled = true;
+        playerController.enabled = false;
     }
 }

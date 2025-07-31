@@ -56,7 +56,7 @@ public class MiniGameBowlController2 : MonoBehaviour
 
         float moveX = Input.GetAxis("Mouse X") * moveSpeed;
         float moveY = Input.GetAxis("Mouse Y") * moveSpeed;
-        transform.position += new Vector3(moveX, moveY, 0f);
+        transform.position += new Vector3(-moveX, moveY, 0f);
 
         if (Input.GetKey(KeyCode.A))
             transform.Rotate(Vector3.forward, rotateSpeed * Time.deltaTime);
