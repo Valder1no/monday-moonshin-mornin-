@@ -4,6 +4,7 @@ public class DeliveryZone : MonoBehaviour
 {
     public string houseName;
     public DeliveryManager deliveryManager;
+    public DeliveryCardUI deliveryCardUI;
 
     private bool active = false;
 
@@ -16,17 +17,25 @@ public class DeliveryZone : MonoBehaviour
     public void Deactivate()
     {
         active = false;
-        gameObject.SetActive(false);
     }
 
     private void OnTriggerEnter(Collider other)
     {
+        if (!active)
+        {
+            if (other.CompareTag("Cake"))
+            {
+                Destroy(other.gameObject);
+                StartCoroutine(deliveryCardUI.FlashMissed());
+            }
+        }
+
         if (!active) return;
 
         if (other.CompareTag("Cake"))
         {
-            Destroy(other.gameObject); // Remove cake
-            deliveryManager.CompleteDelivery(); // Notify success
+            Destroy(other.gameObject);
+            deliveryManager.CompleteDelivery();
         }
     }
 }

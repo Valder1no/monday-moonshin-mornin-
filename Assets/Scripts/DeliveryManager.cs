@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
 public class DeliveryManager : MonoBehaviour
@@ -6,7 +7,15 @@ public class DeliveryManager : MonoBehaviour
     public List<DeliveryZone> deliveryZones;
     public DeliveryCardUI deliveryCardUI;
 
+    public TMPro.TextMeshProUGUI cakesDeliverText;
+    public TMPro.TextMeshProUGUI timeLeftToDelivery;
+
     private DeliveryZone currentZone;
+    private int cakesDelivered = 0;
+
+    [Header("Timer Settings")]
+    public float deliveryTimeLimit = 120f;
+    private Coroutine deliveryTimerCoroutine;
 
     void Start()
     {
@@ -15,22 +24,56 @@ public class DeliveryManager : MonoBehaviour
 
     void StartDeliveryRound()
     {
-        // Pick random delivery zone
-        currentZone = deliveryZones[Random.Range(0, deliveryZones.Count)];
-        currentZone.Activate();
+        if (currentZone != null)
+        {
+            currentZone.Deactivate();
+        }
 
-        // Show the card UI
-        deliveryCardUI.Show(currentZone.houseName); // e.g., "Blue House"
+        currentZone = deliveryZones[Random.Range(0, deliveryZones.Count)];
+        cakesDeliverText.text = $"cakes delivered: {cakesDelivered}";
+
+        currentZone.Activate();
+        deliveryCardUI.Show(currentZone.houseName);
+
+        // Start countdown
+        if (deliveryTimerCoroutine != null) StopCoroutine(deliveryTimerCoroutine);
+        deliveryTimerCoroutine = StartCoroutine(DeliveryTimer());
     }
 
     public void CompleteDelivery()
     {
-        //currentZone.Deactivate();
-        //deliveryCardUI.Hide();
-        StartDeliveryRound();
+        if (deliveryTimerCoroutine != null) StopCoroutine(deliveryTimerCoroutine);
 
+        deliveryTimeLimit = deliveryTimeLimit - 13f;
+
+        cakesDelivered++;
         Debug.Log("Cake delivered to " + currentZone.houseName + "!");
-        // Optionally: End game, score up, restart, etc.
+
+        StartCoroutine(HandleSuccessfulDelivery());
+
+        StartDeliveryRound();
+    }
+
+    private IEnumerator HandleSuccessfulDelivery()
+    {
+        yield return deliveryCardUI.FlashSuccess();
+        StartDeliveryRound();
+    }
+
+    private IEnumerator DeliveryTimer()
+    {
+        float timeLeft = deliveryTimeLimit;
+
+        while (timeLeft > 0f)
+        {
+            timeLeft -= Time.deltaTime;
+            timeLeftToDelivery.text = $"{timeLeft}";
+            yield return null;
+        }
+
+        // Time's up — flicker red and reroll
+        yield return deliveryCardUI.FlashMissed();
+
+        StartDeliveryRound();
     }
 }
-
