@@ -14,7 +14,7 @@ public class DeliveryManager : MonoBehaviour
     private int cakesDelivered = 0;
 
     [Header("Timer Settings")]
-    public float deliveryTimeLimit = 120f;
+    public float deliveryTimeLimit = 320f;
     private Coroutine deliveryTimerCoroutine;
 
     void Start()
@@ -30,10 +30,10 @@ public class DeliveryManager : MonoBehaviour
         }
 
         currentZone = deliveryZones[Random.Range(0, deliveryZones.Count)];
-        cakesDeliverText.text = $"cakes delivered: {cakesDelivered}";
+        cakesDeliverText.text = $"Syrups delivered: {cakesDelivered}";
 
         currentZone.Activate();
-        deliveryCardUI.Show(currentZone.houseName);
+        deliveryCardUI.Show(currentZone.houseName, currentZone.houseSprite);
 
         // Start countdown
         if (deliveryTimerCoroutine != null) StopCoroutine(deliveryTimerCoroutine);

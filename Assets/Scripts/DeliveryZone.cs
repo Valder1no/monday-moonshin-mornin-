@@ -6,6 +6,8 @@ public class DeliveryZone : MonoBehaviour
     public DeliveryManager deliveryManager;
     public DeliveryCardUI deliveryCardUI;
 
+    public Sprite houseSprite;
+
     private bool active = false;
 
     public void Activate()

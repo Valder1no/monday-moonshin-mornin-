@@ -9,9 +9,17 @@ public class DeliveryCardUI : MonoBehaviour
     [SerializeField] private TMP_Text houseNameText;
     [SerializeField] private Image flickerOverlay;
 
-    public void Show(string houseName)
+    public UnityEngine.UI.Image houseImageUI;
+
+    //public Sprite house1Sprite;
+    //public Sprite house2Sprite;
+    //public Sprite house3Sprite;
+
+    public void Show(string houseName, Sprite houseSprite)
     {
         houseNameText.text = "Deliver to: " + houseName;
+        houseImageUI.sprite = houseSprite;
+        houseImageUI.enabled = true; // not needed
         cardPanel.SetActive(true);
     }
 

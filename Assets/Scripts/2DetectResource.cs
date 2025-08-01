@@ -88,6 +88,8 @@ public class ResourceTriggerZone2 : MonoBehaviour
         if (miniGameScript != null) miniGameScript.enabled = true;
         if (playerController != null) playerController.enabled = false;
 
+        //set player velocity to zero if possible
+
         playerButReal.transform.position = targetPos;
         playerButReal.transform.rotation = targetRot;
         //playerButReal.transform.position = //Vector3.Lerp(startPos, targetPos, t);
